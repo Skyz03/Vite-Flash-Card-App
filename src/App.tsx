@@ -1,7 +1,16 @@
-import logo from "../public/assets/images/logo-large.svg"
+import logo from "../src/assets/images/logo-large.svg"
 import './App.css'
-import star from "../public/assets/images/icon-menu.svg"
+import star from "../src/assets/images/pattern-star-blue.svg"
+import Quiz from "../data.json"
+import { useState } from "react";
+import { nextQuestion, prevQuestion, resetQuestion, shuffleQuestion, handleKnowThis } from "../utility/script"
 
+interface Flashcard {
+  question: string;
+  answer: string;
+  knownCount: number;
+  category: string;
+}
 
 interface StatCardProps {
   label?: string;
@@ -37,7 +46,33 @@ const statsIcons = [
   },
 ]
 
+
 function App() {
+
+  const savedCards = localStorage.getItem("flashcards");
+  const [flashcards, setFlashcards] = useState<Flashcard[]>(savedCards ? JSON.parse(savedCards) : Quiz.flashcards);
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const currentCard = flashcards[currentIndex];
+  const shuffleQuestionClick = () =>
+    setCurrentIndex(shuffleQuestion(currentIndex));
+
+  const nextQuestionClick = () =>
+    setCurrentIndex(nextQuestion(currentIndex, flashcards));
+
+  const prevQuestionClick = () =>
+    setCurrentIndex(prevQuestion(currentIndex));
+
+  const resetQuestionClick = () =>
+    setCurrentIndex(resetQuestion(currentIndex));
+
+  const handleKnowThisClick = () => {
+    const { updatedCards, nextIndex } = handleKnowThis(currentIndex, flashcards);
+    setFlashcards(updatedCards);
+    setCurrentIndex(nextIndex);
+    localStorage.setItem("flashcards", JSON.stringify(updatedCards));
+  };
+
+
   return (
     <div className="min-h-screen bg-gray-100 p-6">
 
@@ -65,28 +100,43 @@ function App() {
               <button className="btn-secondary">Hide Mastered</button>
             </div>
             <div className="flex gap-2">
-              <button className="btn-secondary">Shuffle</button>
+              <button className="btn-secondary" onClick={shuffleQuestionClick}>Shuffle</button>
             </div>
           </div>
-
           {/* Flashcard Display */}
           <div className="bg-gray-50 border border-gray-200 rounded-xl p-10 text-center shadow-sm mb-6">
-            <p className="text-lg text-gray-700">
-              Your flashcard question will appear here.
+            <p className="text-lg text-gray-700 border rounded-full bg-white shadow-xl text-xs w-[50%] mx-auto">
+              {currentCard.category}
             </p>
+            <p className="text-lg text-gray-700 p-4">
+              {currentCard.question}
+            </p>
+            <p className="text-black text-xs">Click to reveal answer</p>
+            <p className="text-black" >{flashcards[currentIndex].knownCount} / 5</p>
           </div>
 
           {/* Navigation Buttons */}
           <div className="flex justify-between items-center mb-6">
             <div className="flex w-full gap-2 justify-center items-center">
-              <button className="btn-success">I Know This</button>
-              <button className="btn-danger">Reset</button>
+              <button className="btn-success" onClick={handleKnowThisClick}>I Know This</button>
+              <button className="btn-danger" onClick={resetQuestionClick}>Reset</button>
             </div>
           </div>
 
           <div className="flex w-full justify-between items-center mt-6">
-            <button className="btn-secondary">Previous</button>
-            <button className="btn-primary">Next</button>
+            <button
+              onClick={prevQuestionClick}
+              className="px-4 py-2 bg-gray-300 rounded"
+            >
+              Previous
+            </button>
+
+            <button
+              onClick={nextQuestionClick}
+              className="px-4 py-2 bg-blue-500 text-white rounded"
+            >
+              Next
+            </button>
           </div>
         </section>
 
