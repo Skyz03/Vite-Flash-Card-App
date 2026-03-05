@@ -1,6 +1,9 @@
-import logo from "../public/assets/images/logo-large.svg"
+import logo from "../src/assets/images/logo-large.svg"
 import './App.css'
-import star from "../public/assets/images/icon-menu.svg"
+import star from "../src/assets/images/pattern-star-blue.svg"
+import Quiz from "../data.json"
+import { useState } from "react";
+
 
 
 interface StatCardProps {
@@ -37,7 +40,25 @@ const statsIcons = [
   },
 ]
 
+
 function App() {
+
+  const { flashcards } = Quiz;
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const currentCard = flashcards[currentIndex];
+
+  const nextQuestion = () => {
+    if (currentIndex < flashcards.length - 1) {
+      setCurrentIndex(currentIndex + 1);
+    }
+  };
+
+  const prevQuestion = () => {
+    if (currentIndex > 0) {
+      setCurrentIndex(currentIndex - 1);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gray-100 p-6">
 
@@ -68,12 +89,15 @@ function App() {
               <button className="btn-secondary">Shuffle</button>
             </div>
           </div>
-
           {/* Flashcard Display */}
           <div className="bg-gray-50 border border-gray-200 rounded-xl p-10 text-center shadow-sm mb-6">
-            <p className="text-lg text-gray-700">
-              Your flashcard question will appear here.
+          <p className="text-lg text-gray-700 border rounded-full bg-white shadow-xl text-xs w-[50%] mx-auto">
+              {currentCard.category}
             </p>
+            <p className="text-lg text-gray-700 p-4">
+              {currentCard.question}
+            </p>
+            <p className="text-black text-xs">Click to reveal answer</p>
           </div>
 
           {/* Navigation Buttons */}
@@ -85,8 +109,19 @@ function App() {
           </div>
 
           <div className="flex w-full justify-between items-center mt-6">
-            <button className="btn-secondary">Previous</button>
-            <button className="btn-primary">Next</button>
+            <button
+              onClick={prevQuestion}
+              className="px-4 py-2 bg-gray-300 rounded"
+            >
+              Previous
+            </button>
+
+            <button
+              onClick={nextQuestion}
+              className="px-4 py-2 bg-blue-500 text-white rounded"
+            >
+              Next
+            </button>
           </div>
         </section>
 
