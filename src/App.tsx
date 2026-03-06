@@ -1,15 +1,35 @@
 import logo from "../src/assets/images/logo-large.svg"
 import './App.css'
-import star from "../src/assets/images/pattern-star-blue.svg"
 import Quiz from "../data.json"
 import { useState } from "react";
 import { nextQuestion, prevQuestion, resetQuestion, shuffleQuestion, handleKnowThis } from "../utility/script"
+
+// Icons Stats 
+import brain from "../src/assets/images/brain.svg"
+import book from "../src/assets/images/book.svg"
+import layers from "../src/assets/images/layers.svg"
+import box from "../src/assets/images/box.svg"
+
+// Icon buttons
+import shuffle from "../src/assets/images/icon-shuffle.svg"
+import previous from "../src/assets/images/icon-chevron-left.svg"
+import next from "../src/assets/images/icon-chevron-right.svg"
+import reset from "../src/assets/images/icon-reset.svg"
+import check from "../src/assets/images/icon-check.svg"
+import category from "../src/assets/images/icon-chevron-down.svg"
 
 interface Flashcard {
   question: string;
   answer: string;
   knownCount: number;
   category: string;
+}
+
+interface PrimaryButtonProps {
+  iconLeft: string;
+  iconRight: string;
+  text: string;
+  action: () => void;
 }
 
 interface StatCardProps {
@@ -21,26 +41,26 @@ interface StatCardProps {
 
 const statsIcons = [
   {
-    icon: star,
+    icon: layers,
     label: "Total Cards",
-    color: "bg-blue-500",
+    color: "bg-blue-300",
     value: "24"
   },
   {
-    icon: star,
-    color: "bg-green-500",
+    icon: brain,
+    color: "bg-green-300",
     label: "Mastered",
     value: "11"
   },
   {
-    icon: star,
-    color: "bg-red-500",
+    icon: book,
+    color: "bg-red-300",
     label: "In Progress",
     value: "21"
   },
   {
-    icon: star,
-    color: "bg-yellow-500",
+    icon: box,
+    color: "bg-pink-300",
     label: "Not Started",
     value: "8"
   },
@@ -62,8 +82,17 @@ function App() {
   const prevQuestionClick = () =>
     setCurrentIndex(prevQuestion(currentIndex));
 
-  const resetQuestionClick = () =>
+  const resetQuestionClick = () => {
     setCurrentIndex(resetQuestion(currentIndex));
+
+    const resetCards = flashcards.map(card => ({
+      ...card,
+      knownCount: 0
+    }));
+
+    setFlashcards(resetCards);
+    localStorage.setItem("flashcards", JSON.stringify(resetCards));
+  };
 
   const handleKnowThisClick = () => {
     const { updatedCards, nextIndex } = handleKnowThis(currentIndex, flashcards);
@@ -96,16 +125,33 @@ function App() {
           {/* Controls */}
           <div className="flex justify-between gap-3 mb-6">
             <div className="flex gap-2">
-              <button className="btn-secondary">All Categories</button>
-              <button className="btn-secondary">Hide Mastered</button>
+
+              <PrimaryButton
+                text="All Categories"
+                iconLeft=""
+                iconRight={category}
+                action={handleKnowThisClick}
+              />
+              <PrimaryButton
+                text="Hide Mastered"
+                iconLeft=""
+                iconRight=""
+                action={handleKnowThisClick}
+              />
             </div>
+
             <div className="flex gap-2">
-              <button className="btn-secondary" onClick={shuffleQuestionClick}>Shuffle</button>
+              <PrimaryButton
+                text="Shuffle"
+                iconLeft={shuffle}
+                iconRight=""
+                action={shuffleQuestionClick}
+              />
             </div>
           </div>
           {/* Flashcard Display */}
           <div className="bg-gray-50 border border-gray-200 rounded-xl p-10 text-center shadow-sm mb-6">
-            <p className="text-lg text-gray-700 border rounded-full bg-white shadow-xl text-xs w-[50%] mx-auto">
+            <p className="text-lg text-gray-700 border rounded-full bg-white shadow-xl text-xs w-[50%] mx-auto p-2">
               {currentCard.category}
             </p>
             <p className="text-lg text-gray-700 p-4">
@@ -118,25 +164,38 @@ function App() {
           {/* Navigation Buttons */}
           <div className="flex justify-between items-center mb-6">
             <div className="flex w-full gap-2 justify-center items-center">
-              <button className="btn-success" onClick={handleKnowThisClick}>I Know This</button>
-              <button className="btn-danger" onClick={resetQuestionClick}>Reset</button>
+              <PrimaryButton
+                text="I Know This"
+                iconLeft={check}
+                iconRight=""
+                action={handleKnowThisClick}
+              />
+              <PrimaryButton
+                text="Reset Progress"
+                iconLeft={reset}
+                iconRight=""
+                action={resetQuestionClick}
+              />
             </div>
           </div>
 
           <div className="flex w-full justify-between items-center mt-6">
-            <button
-              onClick={prevQuestionClick}
-              className="px-4 py-2 bg-gray-300 rounded"
-            >
-              Previous
-            </button>
 
-            <button
-              onClick={nextQuestionClick}
-              className="px-4 py-2 bg-blue-500 text-white rounded"
-            >
-              Next
-            </button>
+            <PrimaryButton
+              text="Previous"
+              iconLeft={previous}
+              iconRight=""
+              action={prevQuestionClick}
+            />
+
+            <PrimaryButton
+              text="Next"
+              iconLeft=""
+              iconRight={next}
+              action={nextQuestionClick}
+            />
+
+
           </div>
         </section>
 
@@ -173,10 +232,23 @@ function StatCard({ label, value, icon, color }: StatCardProps) {
         <p className="text-sm text-gray-500">{label}</p>
         <p className="text-2xl font-bold text-gray-800">{value}</p>
       </div>
-      <div className={`flex ${color} items-center`}>
+      <div className={`flex ${color} items-center p-4 rounded-r-md`}>
         <img src={icon} alt="icon" className="w-6 h-6" />
       </div>
     </div>
+  );
+}
+
+function PrimaryButton({ iconLeft, text, action, iconRight }: PrimaryButtonProps) {
+  return (
+    <button
+      onClick={action}
+      className="flex items-center gap-2 px-4 py-2 bg-white text-black border rounded-full shadow-lg hover:cursor-pointer"
+    >
+      {iconLeft && <img src={iconLeft} alt="icon" className="w-4 h-4" />}
+      {text}
+      {iconRight && <img src={iconRight} alt="icon" className="w-4 h-4" />}
+    </button>
   );
 }
 
